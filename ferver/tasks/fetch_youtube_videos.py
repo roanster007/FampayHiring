@@ -48,10 +48,10 @@ def fetch_youtube_videos():
 
 def get_video_objects(video_items):
     videos = []
-    previous_session_cache = redis_client.get('previous_session')
+    previous_session_cache = redis_client.get("previous_session")
 
     if previous_session_cache is not None:
-        previous_session_video_ids = json.loads(redis_client.get('previous_session'))
+        previous_session_video_ids = json.loads(redis_client.get("previous_session"))
 
     for item in video_items:
         video_id = item["id"]["videoId"]
@@ -67,7 +67,10 @@ def get_video_objects(video_items):
 
         # If we encounter a video which is already present in previous
         # fetch, we ignore it.
-        if previous_session_cache is not None and video_id in previous_session_video_ids:
+        if (
+            previous_session_cache is not None
+            and video_id in previous_session_video_ids
+        ):
             continue
 
         video_object = Video(
@@ -110,4 +113,4 @@ def get_current_datetime():
 
 def cache_current_session_video_ids(video_items):
     video_ids = [item["id"]["videoId"] for item in video_items]
-    redis_client.set('previous_session', json.dumps(video_ids))
+    redis_client.set("previous_session", json.dumps(video_ids))

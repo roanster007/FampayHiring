@@ -22,5 +22,5 @@ from ferver.views.videos import Video
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("videos/", Video.as_view(), name="getVideos")
+    path("videos/", Video.as_view(), name="getVideos"),
 ]

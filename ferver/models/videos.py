@@ -16,7 +16,7 @@ class Video(models.Model):
 
     class Meta:
         ordering = ["-published_date"]
-    
+
     def to_dict(self):
         published_date = self.published_date.isoformat() + "Z"
 
