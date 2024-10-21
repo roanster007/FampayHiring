@@ -1,8 +1,11 @@
+import json
+import requests
+import os
+import redis
+
 from celery import shared_task
 from datetime import datetime
 from django.conf import settings
-import requests
-import os
 
 from dotenv import load_dotenv
 
@@ -13,7 +16,14 @@ load_dotenv()
 API_KEY = os.getenv("YOUTUBE_API_KEY")
 GET_TYPE = "video"
 ORDER_BY = "date"
-MAX_RESULTS = 30
+MAX_RESULTS = 10
+
+redis_client = redis.StrictRedis(
+    host=settings.REDIS_HOST,
+    port=settings.REDIS_PORT,
+    db=settings.REDIS_DB,
+    decode_responses=True,
+)
 
 
 @shared_task
@@ -31,15 +41,17 @@ def fetch_youtube_videos():
     data = response.json()
     video_items = data["items"]
 
-    latest_video = Video.objects.first()
-    latest_video_id = latest_video.video_id if latest_video is not None else None
-
-    videos = get_video_objects(video_items, latest_video_id)
+    videos = get_video_objects(video_items)
     Video.objects.bulk_create(videos)
+    cache_current_session_video_ids(video_items)
 
 
-def get_video_objects(video_items, latest_video_id):
+def get_video_objects(video_items):
     videos = []
+    previous_session_cache = redis_client.get('previous_session')
+
+    if previous_session_cache is not None:
+        previous_session_video_ids = json.loads(redis_client.get('previous_session'))
 
     for item in video_items:
         video_id = item["id"]["videoId"]
@@ -53,12 +65,10 @@ def get_video_objects(video_items, latest_video_id):
         published_date = datetime.fromisoformat(snippet["publishedAt"][:-1])
         thumbnail_url = snippet["thumbnails"]["default"]["url"]
 
-        # We stop the moment we reach the first video that is present
-        # in the database. Since all the entries of the database are
-        # already sorted, the entries in the response after this entry
-        # should already be present in the database.
-        if latest_video_id is not None and video_id == latest_video_id:
-            break
+        # If we encounter a video which is already present in previous
+        # fetch, we ignore it.
+        if previous_session_cache is not None and video_id in previous_session_video_ids:
+            continue
 
         video_object = Video(
             video_id=video_id,
@@ -96,3 +106,8 @@ def get_current_datetime():
     # RFC 3339. (eg: "1970-01-01T00:00:00Z")
     rfc3339_datetime = current_datetime.isoformat() + "Z"
     return rfc3339_datetime
+
+
+def cache_current_session_video_ids(video_items):
+    video_ids = [item["id"]["videoId"] for item in video_items]
+    redis_client.set('previous_session', json.dumps(video_ids))

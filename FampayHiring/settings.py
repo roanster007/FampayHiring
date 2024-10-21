@@ -33,6 +33,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# Video Settings
 YOUTUBE_VIDEO_FETCH_TIME_PERIOD = 20.0
 YOUTUBE_SEARCH_HTTP_ENDPOINT = "https://www.googleapis.com/youtube/v3/search"
 YOUTUBE_SEARCH_QUERY = "One Direction"
@@ -138,6 +139,11 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Redis settings
+REDIS_HOST = 'localhost'
+REDIS_PORT = 6379
+REDIS_DB = 0
 
 # Celery settings
 CELERY_BROKER_URL = "redis://localhost:6379/0"
