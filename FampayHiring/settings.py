@@ -10,8 +10,13 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
+import os
 from pathlib import Path
 from celery.schedules import crontab
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,14 +26,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-w2za=v62+3mdrug_(viw_%b#^ztoi%%(h&rp-+y%6jxi2*cw2$"
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = []
 
-YOUTUBE_VIDEO_FETCH_TIME_PERIOD = 10.0
+YOUTUBE_VIDEO_FETCH_TIME_PERIOD = 20.0
+YOUTUBE_SEARCH_HTTP_ENDPOINT = "https://www.googleapis.com/youtube/v3/search"
+YOUTUBE_SEARCH_QUERY = "One Direction"
 
 
 # Application definition
@@ -40,6 +47,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django_celery_beat",
     "ferver",
 ]
 
@@ -135,7 +143,7 @@ CELERY_BROKER_URL = "redis://localhost:6379/0"
 
 CELERY_BEAT_SCHEDULE = {
     "youtube_video_fetch_cron_job": {
-        "task": "ferver.tasks.fetch_youtube_videos",
+        "task": "ferver.tasks.fetch_youtube_videos.fetch_youtube_videos",
         "schedule": YOUTUBE_VIDEO_FETCH_TIME_PERIOD,
     },
 }
