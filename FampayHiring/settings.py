@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,6 +27,8 @@ SECRET_KEY = "django-insecure-w2za=v62+3mdrug_(viw_%b#^ztoi%%(h&rp-+y%6jxi2*cw2$
 DEBUG = True
 
 ALLOWED_HOSTS = []
+
+YOUTUBE_VIDEO_FETCH_TIME_PERIOD = 10.0
 
 
 # Application definition
@@ -126,3 +129,13 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Celery settings
+CELERY_BROKER_URL = "redis://localhost:6379/0"
+
+CELERY_BEAT_SCHEDULE = {
+    "youtube_video_fetch_cron_job": {
+        "task": "ferver.tasks.fetch_youtube_videos",
+        "schedule": YOUTUBE_VIDEO_FETCH_TIME_PERIOD,
+    },
+}
