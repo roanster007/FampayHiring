@@ -36,6 +36,7 @@ ALLOWED_HOSTS = []
 YOUTUBE_VIDEO_FETCH_TIME_PERIOD = 20.0
 YOUTUBE_SEARCH_HTTP_ENDPOINT = "https://www.googleapis.com/youtube/v3/search"
 YOUTUBE_SEARCH_QUERY = "One Direction"
+VIDEO_ENTRIES_PER_PAGE = 10
 
 
 # Application definition

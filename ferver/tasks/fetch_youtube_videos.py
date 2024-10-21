@@ -93,6 +93,6 @@ def get_current_datetime():
     current_datetime = datetime.utcnow()
 
     # The datetime format supported by youtube api is
-    # RFC 3339. (eg 1970-01-01T00:00:00Z)
+    # RFC 3339. (eg: "1970-01-01T00:00:00Z")
     rfc3339_datetime = current_datetime.isoformat() + "Z"
     return rfc3339_datetime

@@ -18,6 +18,9 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
+from ferver.views.videos import Video
+
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("videos/", Video.as_view(), name="getVideos")
 ]
