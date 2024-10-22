@@ -16,8 +16,8 @@ To make an API to fetch latest videos sorted in reverse chronological order of t
 ## API Endpoints:
 
 - `/videos` - Returns the first page of video fields (title, description, video_id, published_date, and thumbnail_url) in the reverse chronological order.
-- `/videos/?page=2` - Returns the second page of video fields in reverse chronological order, counted from the last fetched video (offset pagination).
-- `/videos/?page=2&last_publish_time=2024-10-20T19:12:07+00:00Z` - Returns the second page of video fields in reverse chronological order, counted from the last entry of the previous page (cursor pagination). Note that the `publish_time` is accepted in `RFC 3339` format.
+- `/videos?page=2` - Returns the second page of video fields in reverse chronological order, counted from the last fetched video (offset pagination).
+- `/videos?page=2&last_publish_time=2024-10-22T13:16:49` - Returns the second page of video fields in reverse chronological order, counted from the last entry of the previous page (cursor pagination). Note that the `publish_time` is accepted in `RFC 3339` format.
   <br>
   All API responses are of the form:
 
@@ -47,12 +47,23 @@ num_videos: 3
     $ pip install -r requirements.txt
 
 <br>
-  5. Now before running the server, we have to setup database, so run.
+  5. Make sure you create a PostgreSQL database with the following creds:
+ 
+```py
+    "NAME": "fampay_hiring",
+    "USER": "fampay",
+    "PASSWORD": "password",
+```
+
+<br>
+
+<br>
+  6. Now before running the server, we have to setup database, so run.
  
     $ ./manage.py migrate
 
 <br>
-  6. Now run the following command for starting the dev environment (celery, redis, django server)
+  7. Now run the following command for starting the dev environment (celery, redis, django server)
 
     $ ./tools/run-dev.py
 
