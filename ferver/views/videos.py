@@ -19,7 +19,7 @@ class Video(View):
         try:
             page = int(page)
         except ValueError:
-            return JsonResponse(
+            raise JsonResponse(
                 {"error": "Page parameter must be an integer."}, status=400
             )
 

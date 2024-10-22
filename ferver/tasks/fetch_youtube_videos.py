@@ -1,3 +1,4 @@
+import dotenv
 import json
 import requests
 import os
@@ -6,14 +7,15 @@ import redis
 from celery import shared_task
 from datetime import datetime
 from django.conf import settings
+from django.http import JsonResponse
 
-from dotenv import load_dotenv
 
 from ferver.models.videos import Video
 
-load_dotenv()
+dotenv_file = dotenv.find_dotenv()
+dotenv.load_dotenv()
 
-API_KEY = os.getenv("YOUTUBE_API_KEY")
+API_KEYS = os.environ.get("YOUTUBE_API_KEYS").split(", ")
 GET_TYPE = "video"
 ORDER_BY = "date"
 MAX_RESULTS = 10
@@ -28,15 +30,30 @@ redis_client = redis.StrictRedis(
 
 @shared_task
 def fetch_youtube_videos():
-    request_url = generate_request_url()
+    if not API_KEYS:
+        raise JsonResponse({"error": "No Valid API Keys Provided!"}, status=401)
+
+    API_KEY = API_KEYS[0]
+
+    request_url = generate_request_url(API_KEY)
 
     try:
         response = requests.get(request_url)
         response.raise_for_status()
 
     except requests.exceptions.HTTPError:
-        print("Invalid API KEY!")
-        return
+        # If the current API Key is expired, or has its quota
+        # exceeded, we try to use the next available API Key
+        # after a delay of 5 second.
+        if 400 <= response.status_code < 500:
+            API_KEYS.pop(0)
+            os.environ["YOUTUBE_API_KEYS"] = json.dumps(API_KEYS)
+            dotenv.set_key(dotenv_file, "YOUTUBE_API_KEYS", json.dumps(API_KEYS))
+            fetch_youtube_videos.apply_async(countdown=5)
+            return
+
+        else:
+            response.raise_for_status
 
     data = response.json()
     video_items = data["items"]
@@ -86,7 +103,7 @@ def get_video_objects(video_items):
     return videos
 
 
-def generate_request_url():
+def generate_request_url(API_KEY):
     current_datetime = get_current_datetime()
 
     request_url = (
