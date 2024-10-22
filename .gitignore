@@ -1,5 +1,8 @@
 myenv/
 .env
 
+celerybeat-schedule
+
 __pycache__/
 *.pyc
+*.py[cod]
