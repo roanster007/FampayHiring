@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.http import JsonResponse
 
 from datetime import datetime
 
@@ -12,9 +13,14 @@ def maybe_get_paginated_video_data(page, last_publish_time):
         # In presence of the last published time, we try to return
         # a page with entries older than the last published time,
         # with at most entries of max size of page.
-        last_publish_time_object = datetime.fromisoformat(
-            last_publish_time.replace("00:00Z", "")
-        )
+        try:
+            last_publish_time_object = datetime.fromisoformat(
+                last_publish_time.replace("00:00Z", "")
+            )
+        except ValueError:
+            raise JsonResponse(
+                {"error": "The datetime should be in RFC 3339 Format."}, status=400
+            )
 
         videos_in_page = Video.objects.filter(
             published_date__lt=last_publish_time_object
